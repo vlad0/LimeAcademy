@@ -3,7 +3,8 @@ pragma solidity ^0.4.24;
 contract CarFactory {
 
     event LogCarBought(uint, address, uint, string );
-    
+    event TestUint(uint);
+    event TestBool(bool);
     uint public minimumPrice;
     address admin;
     string[] public cars;
@@ -14,8 +15,13 @@ contract CarFactory {
         require(_minimumPrice>0.5 ether);
         _;
     }
-        
-    constructor(uint _minimumPrice) contractMinimumPrice(_minimumPrice) {
+
+    modifier isAdmin() {
+        require(msg.sender == admin);
+        _;
+    }
+            
+    constructor(uint _minimumPrice) public contractMinimumPrice(_minimumPrice) {
         minimumPrice = _minimumPrice;
         admin = msg.sender;
     }
@@ -42,7 +48,7 @@ contract CarFactory {
         emit LogCarBought(index, ownership.owner, ownership.price, ownership.makeModel);
     }
     
-    function deleteCar(uint _index) {
+    function deleteCar(uint _index) public {
         OwnershipStruct memory ownership = ownershipStructs[_index];
         
         require(msg.sender == ownership.owner);
@@ -51,29 +57,65 @@ contract CarFactory {
         delete ownershipStructs[_index];
     }
     
-    function setMinimumPrice(uint _minimumPrice) public payable {
-        require(_minimumPrice>0.5 ether);
-        require(msg.sender == admin);
-        
-        minimumPrice=_minimumPrice;
+    function getCarDetails(uint _index) public view returns(address, uint, string) {
+        return (ownershipStructs[_index].owner, ownershipStructs[_index].price, ownershipStructs[_index].makeModel);
     }
     
     function takeOverCar(uint _index) public payable{
         OwnershipStruct storage ownership = ownershipStructs[_index];
         uint paid = ownership.price;
         
-        require(msg.value >= 2*paid);
-        require(msg.sender != ownership.owner);
+        require(msg.value >= 2*paid, "Value should be more than twice the original price");
+        require(msg.sender != ownership.owner, "Owner should be different");
         
         // transfer the money to the old owner
         uint difference = msg.value - paid;
         ownership.owner.transfer(paid + difference/2);
+        removeCarFromOwner(_index, ownership.owner);
         
         // set the new owner
         ownership.owner = msg.sender;
         ownership.price = msg.value;
     }
-
+    
+    function removeCarFromOwner(uint _carIndex, address previousOwner) private {
+        uint elementIndex;
+        bool found = false;
+        uint[] storage allCars = allOwnedCars[previousOwner];
+        for  (uint256 i = 0; i < allCars.length; i++) {
+            if(allCars[i] == _carIndex) {
+                found=true;
+                elementIndex=i;
+                break;
+            }
+        }
+        emit TestBool(found);
+        require(found);
+        
+        // remove the car from owner's list
+        // order doesn't matter
+        uint lastItem = allCars[allCars.length-1];
+        allCars[allCars.length-1] = allCars[elementIndex];
+        allCars[elementIndex] = lastItem;
+        delete allCars[allCars.length-1];
+        allCars.length--;
+    }
+    
+    function getCarsByOwner(address _owner) public view returns(uint){
+        return allOwnedCars[_owner].length;
+    }
+    
+    // ***************************
+    // ********** ADMIN **********
+    // ***************************
+    function setMinimumPrice(uint _minimumPrice) public isAdmin contractMinimumPrice(_minimumPrice) {
+        minimumPrice=_minimumPrice;
+    }
+    
+    function withdraw() public isAdmin {
+        admin.transfer(address(this).balance);
+    }
+    
     function getBalance() public view returns(uint) {
         return address(this).balance;
     }
