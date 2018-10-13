@@ -3,8 +3,6 @@ pragma solidity ^0.4.24;
 contract CarFactory {
 
     event LogCarBought(uint, address, uint, string );
-    event TestUint(uint);
-    event TestBool(bool);
     uint public minimumPrice;
     address admin;
     string[] public cars;
@@ -55,6 +53,7 @@ contract CarFactory {
         
         delete cars[_index];
         delete ownershipStructs[_index];
+        removeCarFromOwner(_index, ownership.owner);
     }
     
     function getCarDetails(uint _index) public view returns(address, uint, string) {
@@ -89,7 +88,7 @@ contract CarFactory {
                 break;
             }
         }
-        emit TestBool(found);
+
         require(found);
         
         // remove the car from owner's list
