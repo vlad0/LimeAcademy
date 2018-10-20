@@ -1,6 +1,8 @@
 pragma solidity ^0.4.24;
 
-contract CarFactory {
+import "./Ownable.sol";
+
+contract CarFactory is Ownable {
 
     event LogCarBought(uint, address, uint, string );
     uint public minimumPrice;
@@ -11,11 +13,6 @@ contract CarFactory {
     
     modifier contractMinimumPrice(uint _minimumPrice) {
         require(_minimumPrice>0.5 ether, "Minimum price requirement is not met!");
-        _;
-    }
-
-    modifier isAdmin() {
-        require(msg.sender == admin, "Sender is not administrator");
         _;
     }
             
@@ -30,6 +27,10 @@ contract CarFactory {
         string makeModel;
     }
     
+    function getOwner() public view returns(address) {
+        return owner;
+    }
+
     function buyCar(string _makeModel) public payable {
         require(msg.value >= minimumPrice, "Minimum price is not met");
         
@@ -107,11 +108,11 @@ contract CarFactory {
     // ***************************
     // ********** ADMIN **********
     // ***************************
-    function setMinimumPrice(uint _minimumPrice) public isAdmin contractMinimumPrice(_minimumPrice) {
+    function setMinimumPrice(uint _minimumPrice) public isOwner contractMinimumPrice(_minimumPrice) {
         minimumPrice = _minimumPrice;
     }
     
-    function withdraw() public isAdmin {
+    function withdraw() public isOwner {
         admin.transfer(address(this).balance);
     }
     
