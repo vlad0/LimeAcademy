@@ -20,28 +20,28 @@ describe('CarFactory', () => {
         const secondWallet = new ethers.Wallet(secondOwner.secretKey, deployer.provider);
         secondContract = new ethers.Contract(contract.address, carFactory.abi, secondWallet);
     });
-    it.skip('should set owner of the contract', async () => {
+    it('should set owner of the contract', async () => {
         const contractOwner = await contract.getOwner();
         assert.strictEqual(contractOwner, owner.wallet.address);
     });
 
-    it.skip('should set minimum price', async () => {
+    it('should set minimum price', async () => {
         const minimumPrice = await contract.minimumPrice();
         const expectedMinimumPrice = ethers.utils.parseEther(initialMinimumPrice);
         assert(minimumPrice.eq(expectedMinimumPrice));
     });
 
-    it.skip('should fail if initial minimum price is <= 0.5', async () => {
+    it('should fail if initial minimum price is <= 0.5', async () => {
         const minimumPrice = '0.5'; // eth
         assert.revert(deployer.deploy(carFactory, {}, ethers.utils.parseEther(minimumPrice)));
     });
 
-    it.skip('should buy car successfully', async () => {
+    it('should buy car successfully', async () => {
         const result = await contract.buyCar(initialCarName, { value: ethers.utils.parseEther(initialMinimumPrice) });
         assert.isOk(result);
     });
 
-    it.skip('should fail when buying a car at lower price', async () => {
+    it('should fail when buying a car at lower price', async () => {
         await assert.revert(contract.buyCar(initialCarName, { value: ethers.utils.parseEther('0.50') }));
     });
 
@@ -75,7 +75,7 @@ describe('CarFactory', () => {
         it('should raise a LogCarBought event', async () => {
             let txReceipt = await deployer.provider.getTransactionReceipt(result.hash);
 
-            let isEmitted = utils.hasEvent(txReceipt, contract, 'LogCarBought1');
+            let isEmitted = utils.hasEvent(txReceipt, contract, 'LogCarBought');
             assert(isEmitted, 'Event LogCarBought not emitted');
         });
     })
