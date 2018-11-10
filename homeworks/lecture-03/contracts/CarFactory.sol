@@ -4,13 +4,13 @@ import "./Ownable.sol";
 
 contract CarFactory is Ownable {
 
-    event LogCarBought(uint, address, uint, string );
     uint public minimumPrice;
     address admin;
     string[] public cars;
     mapping(uint => OwnershipStruct) public ownershipStructs;
     mapping(address => uint[]) public allOwnedCars;
-    
+    mapping(uint => address ) public carsOwner;
+
     modifier contractMinimumPrice(uint _minimumPrice) {
         require(_minimumPrice>0.5 ether, "Minimum price requirement is not met!");
         _;
@@ -31,6 +31,7 @@ contract CarFactory is Ownable {
         return owner;
     }
 
+    event LogCarBought(uint, address, uint, string );
     function buyCar(string _makeModel) public payable {
         require(msg.value >= minimumPrice, "Minimum price is not met");
         
@@ -43,7 +44,7 @@ contract CarFactory is Ownable {
         
         // save the all cars owned by someone
         allOwnedCars[msg.sender].push(index);
-        
+        carsOwner[index] = msg.sender;
         emit LogCarBought(index, ownership.owner, ownership.price, ownership.makeModel);
     }
     
@@ -55,6 +56,10 @@ contract CarFactory is Ownable {
         delete cars[_index];
         delete ownershipStructs[_index];
         removeCarFromOwner(_index, ownership.owner);
+    }
+
+    function getCarsLength() public view returns(uint) {
+        return cars.length;
     }
     
     function getCarDetails(uint _index) public view returns(address, uint, string) {
@@ -99,6 +104,8 @@ contract CarFactory is Ownable {
         allCars[elementIndex] = lastItem;
         delete allCars[allCars.length-1];
         allCars.length--;
+
+        carsOwner[_carIndex] = msg.sender;
     }
     
     function getCarsByOwner(address _owner) public view returns(uint){

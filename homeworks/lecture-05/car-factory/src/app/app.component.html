@@ -1,0 +1,58 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<h1>{{currentBlock}}
+</h1>
+
+Contract address: <input type="text" [value]="contractAddress" (input)="contractAddress = $event.target.value" />
+<br>
+{{contractAddress}}
+<br>
+Length: {{contractAddress.length}}
+<hr>
+
+Owner address: <input type="text" [value]="ownerAddress" (input)="ownerAddress = $event.target.value" />
+<br>
+{{ownerAddress}}
+<br>
+Length: {{ownerAddress.length}}
+<br>
+<button (click)="getCarsByOwner(ownerAddress)" [disabled]="loadingGetCarsByOwner">Get cars by Owner</button>
+<hr>
+
+Car Index <input type="text" [value]="carIndex" (input)="carIndex = $event.target.value" /> <button [disabled]="loadingGetOwner"
+  (click)="getOwner(carIndex)">Get
+  Owner</button>
+<br>
+{{carIndex}}
+<strong>{{carOwner}}</strong>
+<ul>
+  <li *ngFor="let carDetail of detailsResult">
+    <!-- {{carDetail | json}} -->
+    <span>Name: {{carDetail[2]}}</span> <br>
+    <span>Price: {{carDetail[1].toString()}}</span>
+  </li>
+</ul>
+
+<button (click)="withdraw()">Withdraw</button>
+
+<ul>
+  <li *ngFor="let carDetail of allCars | async">
+    <!-- {{carDetail | json}} -->
+    <span>Name: {{carDetail[2]}}</span> <br>
+    <span>Price: {{carDetail[1].toString()}}</span>
+  </li>
+</ul>
+
+<button (click)="getAllCars()">Get All Cars</button>
+<hr>
+<div *ngIf="!loadingBuyCar">
+  Car name: <input type="text" [value]="buyCarName" (input)="buyCarName = $event.target.value" />
+  <br>
+  {{buyCarName}}
+  <br>
+  Car price(ethers): <input type="text" [value]="buyCarPrice" (input)="buyCarPrice = $event.target.value" />
+  <br>
+  {{buyCarPrice}}
+  <br>
+</div>
+<h1 *ngIf="loadingBuyCar">Loading...</h1>
+<button [disabled]="loadingBuyCar" (click)="buyCar(buyCarName, buyCarPrice)">Buy Car</button>

@@ -1,6 +1,4 @@
 const etherlime = require('etherlime');
-const LimeFactory = require('../build/LimeFactory.json');
-
 
 const deploy = async (network, secret) => {
 
