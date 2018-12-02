@@ -1,6 +1,6 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<!-- <h1>Contract balance: {{ balance | async}}
-</h1> -->
+<h1>Contract balance: {{ balance | async}}
+</h1>
 <hr>
 <div *ngIf="!wallet">
   Encryption key: <input type="text" #encryptionKey />
@@ -53,7 +53,8 @@ Car Index <input type="text" [value]="carIndex" (input)="carIndex = $event.targe
     <!-- {{carDetail | json}} -->
     <span>Owner: {{carDetail[0]}}</span> <br>
     <span>Name: {{carDetail[2]}}</span> <br>
-    <span>Price: {{ utils.formatEther( carDetail[1].toString())}}</span>
+    <span>Price: {{ utils.formatEther( carDetail[1].toString())}}</span> <br>
+    <span>Image: <img src="http://192.168.99.100:8080/ipfs/{{carDetail[3]}}" alt=""></span>
     <br>
     Take Over Price: <input type="text" #takeOverPrice />
     <button (click)="takeOver(index, takeOverPrice.value)">Take Over Car</button>
@@ -67,10 +68,13 @@ Car Index <input type="text" [value]="carIndex" (input)="carIndex = $event.targe
   <br>
   {{buyCarName}}
   <br>
-  Car price(ethers): <input type="text" [value]="buyCarPrice" (input)="buyCarPrice = $event.target.value" />
+  Car price(ethers): <input type="
+      text" [value]="buyCarPrice" (input)="buyCarPrice = $event.target.value" />
   <br>
   {{buyCarPrice}}
   <br>
+  Image2: <input *ngIf="!buyCarImage" type="file" #file (change)="uploadToIPFS()" />
+  {{buyCarImage}}
 </div>
 <h1 *ngIf="loadingBuyCar">Loading...</h1>
-<button [disabled]="loadingBuyCar" (click)="buyCar(buyCarName, buyCarPrice)">Buy Car</button>
+<button [disabled]="loadingBuyCar" (click)="buyCar(buyCarName, buyCarPrice, buyCarImage)">Buy Car</button>

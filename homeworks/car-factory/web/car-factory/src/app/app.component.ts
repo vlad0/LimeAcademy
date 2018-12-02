@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import * as CarFactoryInterface from '../contracts_interface/CarFactory.json';
 import * as ethers from 'ethers';
 import { Web3Provider } from 'ethers/providers';
+import { Buffer } from 'buffer';
 
 @Component({
   selector: 'app-root',
@@ -27,14 +28,21 @@ export class AppComponent {
   private loadingGetOwner: boolean = false;
   private loadingBuyCar: boolean = false;
   private web3: any;
-  private buyCarName: string;
-  private buyCarPrice: number;
+  private buyCarName: string = '';
+  private buyCarPrice: number = 0.51;
+  private buyCarImage: string;
   private utils: any = ethers.utils;
   private balance: string;
   private walletJson: string;
   private wallet: ethers.Wallet;
+  private ipfs: any;
+  private reader: FileReader;
+  @ViewChild('file') file;
+
 
   constructor() {
+    this.ipfs = window['IpfsApi']('192.168.99.100', '5001');
+    console.log('Ipfs: ', this.ipfs);
     this.infuraProvider = new ethers.providers.InfuraProvider('rinkeby', this.infuraApiKey);
     this.deployedContract = new ethers.Contract(this.contractAddress, CarFactoryInterface.abi, this.infuraProvider);
     this.initiateConnectedContract();
@@ -65,15 +73,27 @@ export class AppComponent {
     }
   }
 
-  public async buyCar(carName: string, carPrice: Number) {
+  public async uploadToIPFS() {
+    console.log('___________Upload to: ', null);
+    this.reader = new FileReader();
+    this.reader.readAsArrayBuffer(this.file.nativeElement.files[0]);
+    console.log('File: ', this.file.nativeElement.files[0]);
+    this.reader.onloadend = async () => {
+      const buf = new Buffer(this.reader.result as ArrayBuffer);
+      const result = await this.ipfs.files.add(buf).then();
+      this.buyCarImage = result[0].path;
+    };
+  }
+
+  public async buyCar(carName: string, carPrice: Number, buyCarImage: string) {
     if (carPrice > 0.51) {
       throw new Error('Tooo much money. Car price should be less than 0.52 ETH');
     }
-    console.log('Car Name: ', carName);
-    console.log('Car Price: ', carPrice);
+
     this.loadingBuyCar = true;
     try {
-      const tx = await this.connectedContract.buyCar(carName, { value: this.utils.parseEther(carPrice.toString()) });
+
+      const tx = await this.connectedContract.buyCar(carName, buyCarImage, { value: this.utils.parseEther(carPrice.toString()) });
       console.log('Transaction: ', tx);
       const waitTx = await tx.wait();
       console.log('WaitTx: ', waitTx);
